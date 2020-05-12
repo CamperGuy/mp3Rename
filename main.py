@@ -8,17 +8,19 @@ def main(path=""):
         path = sys.argv[1]
     else:
         path = ""
-    print("Path: " + path)
+    
     if os.path.isfile(path):
-        tags(remove(path))
+        tags(formatname(path))
 
     elif os.path.isdir(path):
         for filename in os.listdir(path):
-            tags(remove(filename))
+            tags(formatname(filename))
 
     elif path == "":
+        print("https://github.com/CamperGuy/mp3Rename\n")
+        print("--- Main Menu")
         print("[0] Remove Trash from filename")
-        print("[1] Set filename as mp3 tags [Artist] - [Title].mp3")
+        print("[1] Set filename as mp3 tags")
         print("[2] Remove Trash and set MP3 Tags")
         proceed = False
         while not (proceed):
@@ -31,10 +33,10 @@ def main(path=""):
                 if option == 0:
                     path = input("Enter path or file: ")
                     if os.path.isfile(path):
-                        remove(path)
+                        formatname(path)
                     elif os.path.isdir(path):
                         for file in os.listdir(path):
-                            remove(path + "/" + file)
+                            formatname(path + "/" + file)
                 elif option == 1:
                     proceed = True
                     path = input("Enter path or file: ")
@@ -47,12 +49,12 @@ def main(path=""):
                     proceed = True
                     path = input("Enter path or file: ")
                     if os.path.isfile(path):
-                        tags(remove(path))
+                        tags(formatname(path))
                     elif os.path.isdir(path):
                         for file in os.listdir(path):
-                            tags(remove(path, file))
+                            tags(formatname(path, file))
 
-def remove(path, output=True):
+def formatname(path, output=True):
     ext = path[-4:]
     dir = path.split('/')
     edit = dir[len(dir)-1]
@@ -97,7 +99,7 @@ def tags(file):
     command = "ffmpeg -i '{}' -c:a mp3 -ab 320k -metadata title='{}' -metadata artist='{}' '{}'".format(*format_list)
     print(command)
     os.system(command)
-    remove(dir+editable+"{ tagged }" + ext, True)
+    formatname(dir+editable+"{ tagged }" + ext, True)
     print("Completed: " + editable)
 
 if __name__ == "__main__":
