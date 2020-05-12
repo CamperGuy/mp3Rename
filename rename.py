@@ -1,8 +1,13 @@
 #!/usr/bin/env python
-
 import os
+import sys
 
 def main(path=""):
+    if len(sys.argv) == 2:
+        path = sys.argv[1]
+    else:
+        path = ""
+    print("Path: " + path)
     if os.path.isfile(path):
         tags(remove(path))
 
@@ -46,14 +51,15 @@ def main(path=""):
                         for file in os.listdir(path):
                             tags(remove(path, file))
 
-def remove(path):
+def remove(path, output=True):
     ext = path[-4:]
     dir = path.split('/')
     edit = dir[len(dir)-1]
     dir.pop(len(dir)-1)
     dir = '/'.join(dir) + '/'
     edit = edit.replace(ext, '')
-    trash = [   "(Official Music Video)", "(official music video)", "[Official Music Video]", "[official music video]", "Official Music Video", "official music video",
+    trash = [   "{ tagged }",
+                "(Official Music Video)", "(official music video)", "[Official Music Video]", "[official music video]", "Official Music Video", "official music video",
                 "(Official Video)", "(official video)", "[Official Video]", "[official video]", "Official Video", "official video", 
                 "(Official Audio)", "(official audio)", "[Official Audio]", "[official audio]",  "Official Audio", "official audio", 
                 "(Official Lyric Video)", "(official lyric video)", "[Official Lyric Video]", "[official lyric video]", "(Official Lyrics)", "(official lyrics)", "Official Lyric Video", "official lyric video",  "Official Lyrics", "official lyrics", 
@@ -68,13 +74,30 @@ def remove(path):
             edit = edit.replace(item, '')
     edit = edit.strip()
     updated = edit + ext
-    print("Original: " + path)
-    print("Edited:   " + dir + updated + "\n")
+    if output:
+        print("Original: " + path)
+        print("Edited:   " + dir + updated + "\n")
     os.rename(path, dir + updated)
     return dir + updated
 
 def tags(file):
-    print("File: " + file)
-    print("To be implemented")
+    ext = file[-4:]
+    dir = file.split('/')
+    dir.pop(len(dir)-1)
+    dir = '/'.join(dir) + '/'
+    
+    editable = file.replace(dir, '')
+    editable = editable.replace(ext, '')
+    
+    artist = editable.split('-')[0].strip()
+    title = editable.split('-')[1].strip()
+
+    print("Initialising FFMPEG...")
+    format_list = [file, title, artist, dir+editable+"{ tagged }" + ext]
+    command = "ffmpeg -i '{}' -c:a mp3 -ab 320k -metadata title='{}' -metadata artist='{}' '{}'".format(*format_list)
+    os.system(command)
+    remove(dir+editable+"{ tagged }" + ext, False)
+    print("Completed: " + editable)
+
 if __name__ == "__main__":
     main()
