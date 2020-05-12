@@ -59,6 +59,7 @@ def remove(path, output=True):
     dir.pop(len(dir)-1)
     dir = '/'.join(dir) + '/'
     edit = edit.replace(ext, '')
+    edit = edit.replace("{ tagged }", '')
 
     regex = re.compile('\s?[\[\(]?((official|lyric|video|music|audio|monstercat|ncs|release|visualiser)\s?)+[\]\)]?\s?', re.IGNORECASE)
     edit = re.sub(regex, '', edit)
