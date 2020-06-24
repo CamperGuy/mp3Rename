@@ -50,7 +50,7 @@ def main(path=""):
             except:
                 continue
             
-            if option in range(0, 4):
+            if option in range(0, 5):
                 menuloop = False
                 # Auto Filename
                 if option == 0:
