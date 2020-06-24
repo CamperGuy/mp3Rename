@@ -17,4 +17,4 @@ else:
     os.system("deactivate")
 
 os.system("python rename.py")
-os.system("remove setup.py")
+os.remove("setup.py")
