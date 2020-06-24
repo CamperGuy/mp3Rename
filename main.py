@@ -5,7 +5,16 @@ import sys
 import ffmpeg
 import webbrowser
 
+def setup():
+    os.system("virtualenv rename")
+    os.system("source rename/bin/activate")
+    os.system("pip install -r requirements.txt")
+
 def main(path=""):
+    if os.path.exists("requirements.txt"):
+        setup()
+        os.remove("requirements.txt")
+    
     # Set path if it has been given as a cmd line argument
     if len(sys.argv) == 2:
         path = sys.argv[1]
