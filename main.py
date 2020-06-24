@@ -3,21 +3,18 @@ import os
 import re
 import sys
 import ffmpeg
-import keyboard
-
-automated = False
+import webbrowser
 
 def main(path=""):
     # Set path if it has been given as a cmd line argument
     if len(sys.argv) == 2:
         path = sys.argv[1]
-        automated = True
     
     if os.path.isfile(path):
         # Ignore tags for mp4s
         ext = path[-4:]
         if ext != ".mp4":
-            tags(filename(path, False))
+            tags(filename(path, False), True)
         else:
             filename(path, False)
 
@@ -26,16 +23,17 @@ def main(path=""):
             # Ignore tags for mp4s
             ext = path[-4:]
             if ext != ".mp4":
-                tags(filename(path, False))
+                tags(filename(path, False), True)
             else:
                 filename(path, False)
 
     elif path == "":
-        print("\n--- Main Menu")
-        print("[0] Tidy filename")
-        print("[1] Set mp3 tags from filename")
-        print("[2] Tidy filename and set mp3 tags")
-        print("[3] Quit")
+        print("\n--- mp3 Rename")
+        print("[0] Automatically tidy filenames")
+        print("[1] Automatically set mp3 tags")
+        print("[2] Manually set mp3 tags")
+        print("[3] About")
+        print("[4] Quit")
         menuloop = True
         while (menuloop):
             try: 
@@ -45,7 +43,7 @@ def main(path=""):
             
             if option in range(0, 4):
                 menuloop = False
-                # Filename
+                # Auto Filename
                 if option == 0:
                     path = input("Path: ")
                     if os.path.isfile(path):
@@ -57,34 +55,37 @@ def main(path=""):
                         print("Path given is neither a file or directory \n")
                         main()
 
-                # Tags
+                # Auto Tags
                 elif option == 1:
                     menuloop = False
                     path = input("Enter Path: ")
                     if os.path.isfile(path):
-                        tags(path)
+                        tags(path, True)
                     elif os.path.isdir(path):
                         for file in os.listdir(path):
-                            tags(file)
+                            tags(file, True)
                     else:
                         print("Path given is neither a file or directory \n")
                         main()
 
-                # Both
+                # Manual Tags
                 elif option == 2:
                     menuloop = False
                     path = input("Enter Path: ")
                     if os.path.isfile(path):
-                        tags(filename(path))
+                        tags(path, False)
                     elif os.path.isdir(path):
                         for file in os.listdir(path):
-                            tags(filename(path, file))
+                            tags(path, False)
                     else:
                         print("Path given is neither a file or directory \n")
                         main()
+                # About
+                elif option == 3:
+                    webbrowser.open('https://github.com/CamperGuy/mp3Rename/blob/master/README.md', new=2)
 
                 # Quit        
-                elif option == 3:
+                elif option == 4:
                     exit()
 
 def filename(path, output=True):
@@ -104,8 +105,8 @@ def filename(path, output=True):
         edit = edit.strip()
         updated = edit + ext
         if output == True:
-            print(og + " to")
-            print(edit + ext)
+            print("☐ " + og)
+            print("☑ " + edit + ext + "\n")
         
         try:
             os.rename(path, dir + updated)
@@ -114,7 +115,7 @@ def filename(path, output=True):
         
         return dir + updated
 
-def tags(file):
+def tags(file, automated=False):
     ext = file[-4:]
     dir = file.split('/')
     dir.pop(len(dir)-1)
@@ -131,24 +132,20 @@ def tags(file):
         title = editable
     
     if not automated:
-        print("\nArtist: " + artist)
-        print("Title : " + title)
-        option = input("Is this okay? [y/n]\n> ")
-        if option == "y":
-            confirmed = True
-        elif option == "n":
-            artist = input("Artist: ")
-            title = input("Title: ")
+        artist = input("Artist: ")
+        title = input("Title: ")
 
     print("Recompiling Audio...")
 
-    stream = ffmpeg.input(file)
+    hidden = dir + "." + artist + " - " + title + ext
+    os.rename(file, hidden)
+    stream = ffmpeg.input(hidden)
     stream = ffmpeg.output(stream, dir+artist + " - " + title + ext, loglevel='quiet', ab='320k', **{ 'metadata':'title=' + title, 'metadata:':'artist=' + artist} )
     ffmpeg.run(stream)
 
     print("Completed: " + artist + " - " + title)
-    os.remove(file)
-    print("Deleted: " + file)
+    os.remove(hidden)
+    print("Deleted: " + hidden)
 
 if __name__ == "__main__":
     main()
